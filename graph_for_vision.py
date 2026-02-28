@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import math
 import os
-from typing import Tuple
+from typing import Any, Tuple
 import xml.etree.ElementTree as ElementTree
 
 import numpy as np
@@ -212,7 +212,7 @@ class BasicConv(Seq):
         for i in range(1, len(channels)):
             m.append(Conv2d(channels[i - 1], channels[i], 1, bias=bias, groups=4))
             if norm is not None and norm.lower() != "none":
-                m.append(norm_layer(norm, channels[-1]))
+                m.append(norm_layer(norm, channels[i]))
             if act is not None and act.lower() != "none":
                 m.append(act_layer(act))
             if drop > 0:
@@ -491,7 +491,7 @@ class Downsample(nn.Module):
         return self.conv(x)
 
 
-def _cfg(url: str = "", **kwargs: dict) -> dict:
+def _cfg(url: str = "", **kwargs: Any) -> dict:
     return {
         "url": url,
         "num_classes": 6,
@@ -595,9 +595,9 @@ class DeepGCN(nn.Module):
 
 
 @register_model
-def pvig_ti_224_gelu(pretrained: bool = False, **kwargs: dict) -> DeepGCN:
+def pvig_ti_224_gelu(pretrained: bool = False, **kwargs: Any) -> DeepGCN:
     class OptInit:
-        def __init__(self, num_classes: int = 6, drop_path_rate: float = 0.3, **kwargs: dict):
+        def __init__(self, num_classes: int = 6, drop_path_rate: float = 0.3, **kwargs: Any):
             self.k = 9
             self.conv = "mr"
             self.act = "gelu"
@@ -784,7 +784,7 @@ def train(model: nn.Module, dataset: CODEBRIM, args: argparse.Namespace, device:
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         factor=0.5,
-        patience=0,
+        patience=5,
         threshold=0.001,
         verbose=True,
         min_lr=1e-5,
